@@ -19,6 +19,7 @@
     <modules>
         <module>gmall-admin</module>
         <module>gmall-common</module>
+        <module>gmall-pms</module>
     </modules>
 
     <properties>
@@ -137,5 +138,6 @@
 
         </dependencies>
     </dependencyManagement>
+
 
 </project>
