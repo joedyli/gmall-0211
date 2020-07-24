@@ -20,6 +20,7 @@ import com.atguigu.gmall.common.bean.PageParamVo;
 import com.atguigu.gmall.sms.mapper.SkuBoundsMapper;
 import com.atguigu.gmall.sms.entity.SkuBoundsEntity;
 import com.atguigu.gmall.sms.service.SkuBoundsService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
@@ -43,6 +44,7 @@ public class SkuBoundsServiceImpl extends ServiceImpl<SkuBoundsMapper, SkuBounds
         return new PageResultVo(page);
     }
 
+    @Transactional
     @Override
     public void saveSkuSales(SkuSaleVo skuSaleVo) {
         // 3.1. 保存积分信息

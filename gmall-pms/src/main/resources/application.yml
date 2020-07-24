@@ -9,3 +9,8 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+spring:
+  cloud:
+    alibaba:
+      seata:
+        tx-service-group: pms-service-fescar-service-group

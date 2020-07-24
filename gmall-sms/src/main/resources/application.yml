@@ -9,6 +9,9 @@ spring:
       transport:
         dashboard: localhost:8080
         port: 8719
+    alibaba:
+      seata:
+        tx-service-group: sms-service-fescar-service-group
   zipkin:
     base-url: http://localhost:9411
     discovery-client-enabled: false
