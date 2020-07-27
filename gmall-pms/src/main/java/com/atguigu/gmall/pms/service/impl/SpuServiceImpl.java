@@ -114,7 +114,7 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
         // 2.保存sku相关信息
         saveSkuInfo(spuVo, spuId);
 
-        int i = 1/0;
+//        int i = 1/0;
     }
 
     private void saveSkuInfo(SpuVo spuVo, Long spuId) {
