@@ -138,7 +138,7 @@ public class SearchService {
             switch (sort) {
                 case 1: sourceBuilder.sort("price", SortOrder.ASC); break;
                 case 2: sourceBuilder.sort("price", SortOrder.DESC); break;
-                case 3: sourceBuilder.sort("sale", SortOrder.DESC); break;
+                case 3: sourceBuilder.sort("sales", SortOrder.DESC); break;
                 case 4: sourceBuilder.sort("createTime", SortOrder.DESC); break;
             }
         }
@@ -316,7 +316,7 @@ public class SearchService {
 
                     return searchResponseAttrVo;
                 }).collect(Collectors.toList());
-                responseVo.setAttrs(searchResponseAttrVos);
+                responseVo.setFilters(searchResponseAttrVos);
             }
         }
 

@@ -14,7 +14,7 @@ public class SearchResponseVo {
     // 封装分类的过滤条件
     private List<CategoryEntity> categories;
     // 封装规格参数过滤条件
-    private List<SearchResponseAttrVo> attrs;
+    private List<SearchResponseAttrVo> filters;
 
     private Integer pageNum;
     private Integer pageSize;
