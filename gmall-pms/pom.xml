@@ -77,5 +77,9 @@
             <artifactId>aliyun-sdk-oss</artifactId>
             <version>3.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
     </dependencies>
 </project>

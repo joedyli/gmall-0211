@@ -14,3 +14,10 @@ spring:
     alibaba:
       seata:
         tx-service-group: pms-service-fescar-service-group
+  rabbitmq:
+    host: 172.16.116.100
+    virtual-host: /fengge
+    username: fengge
+    password: fengge
+    publisher-confirm-type: CORRELATED
+    publisher-returns: true

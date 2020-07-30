@@ -1,15 +1,18 @@
 package com.atguigu.gmall.pms.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
 import lombok.Data;
 
 /**
  * 商品三级分类
- * 
+ *
  * @author fengge
  * @email fengge@atguigu.com
  * @date 2020-07-20 14:05:40
@@ -48,5 +51,8 @@ public class CategoryEntity implements Serializable {
 	 * 计量单位
 	 */
 	private String unit;
+
+	@TableField(exist = false)
+	private List<CategoryEntity> subs;
 
 }

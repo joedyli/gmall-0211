@@ -15,6 +15,8 @@ public class CorsWebConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         // 允许跨域访问的域名。不要写*，写*无法携带cookie
         corsConfiguration.addAllowedOrigin("http://manager.gmall.com");
+        corsConfiguration.addAllowedOrigin("http://gmall.com");
+        corsConfiguration.addAllowedOrigin("http://www.gmall.com");
         // 是否允许携带cookie
         corsConfiguration.setAllowCredentials(true);
         // 允许访问的方式
