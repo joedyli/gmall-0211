@@ -5,4 +5,10 @@
     <select id="querySearchAttrValueBySkuId" resultType="SkuAttrValueEntity">
         select * from pms_attr a INNER JOIN pms_sku_attr_value b on a.id = b.attr_id where b.sku_id=#{skuId} and a.search_type=1
     </select>
+
+    <select id="querySaleAttrMappingSkuIdBySpuId" resultType="java.util.Map">
+        select a.sku_id, GROUP_CONCAT(a.attr_value) as attr_values from pms_sku_attr_value a
+            INNER JOIN pms_sku b on a.sku_id = b.id
+            where b.spu_id=#{spuId} GROUP BY a.sku_id
+    </select>
 </mapper>
