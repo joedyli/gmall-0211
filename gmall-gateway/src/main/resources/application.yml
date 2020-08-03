@@ -22,7 +22,7 @@ spring:
         - id: ums-route
           uri: lb://ums-service
           predicates:
-            - Path=/ums/
+            - Path=/ums/**
         - id: oms-route
           uri: lb://oms-service
           predicates:
@@ -39,4 +39,8 @@ spring:
           uri: lb://index-service
           predicates:
             - Path=/index/**
+        - id: item-route
+          uri: lb://item-service
+          predicates:
+            - Host=item.gmall.com
 

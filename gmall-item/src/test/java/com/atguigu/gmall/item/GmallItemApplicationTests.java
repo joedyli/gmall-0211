@@ -8,6 +8,8 @@ class GmallItemApplicationTests {
 
     @Test
     void contextLoads() {
+
+
     }
 
 }
