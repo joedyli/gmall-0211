@@ -15,7 +15,7 @@ public class JwtUtils {
      * 私钥加密token
      *
      * @param map           载荷中的数据
-     * @param expireMinutes 过期时间，单位秒
+     * @param expireMinutes 过期时间，单位分钟
      * @return
      * @throws Exception
      */

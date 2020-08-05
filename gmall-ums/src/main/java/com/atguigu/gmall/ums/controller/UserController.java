@@ -29,6 +29,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("query")
+    public ResponseVo<UserEntity> queryUser(@RequestParam("loginName")String loginName, @RequestParam("password")String password){
+        UserEntity userEntity = this.userService.queryUser(loginName, password);
+        return ResponseVo.ok(userEntity);
+    }
+
     @PostMapping("register")
     public ResponseVo<Object> register(UserEntity user, @RequestParam("code")String code){
         this.userService.register(user, code);
