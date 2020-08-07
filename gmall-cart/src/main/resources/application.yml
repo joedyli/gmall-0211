@@ -26,6 +26,18 @@ spring:
     password: root
   redis:
     host: 172.16.116.100
+  task:
+    execution:
+      thread-name-prefix: cart-task-
+      pool:
+        core-size: 100
+        max-size: 500
+        queue-capacity: 1000
+        allow-core-thread-timeout: true
+        keep-alive: 60s
+      shutdown:
+        await-termination: true
+        await-termination-period: 100
 feign:
   sentinel:
     enabled: true
