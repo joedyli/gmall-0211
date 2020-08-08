@@ -52,6 +52,8 @@ public class CartService {
 
     private static final String KEY_PREFIX = "cart:info:";
 
+    private static final String PRICE_PREFIX = "cart:price:";
+
     public void saveCart(Cart cart) {
 
         // 获取用户的登录信息
@@ -108,6 +110,8 @@ public class CartService {
 
             // 新增mysql数据库
             this.cartAsyncService.addCart(cart);
+            // 并且新增价格的缓存，如果已经有人把该商品加入了购物车，该商品的价格缓存已存在。这时依然进行加缓存，相当于做了价格同步
+            this.redisTemplate.opsForValue().set(PRICE_PREFIX + skuId, skuEntity.getPrice().toString());
         }
         // redis中，更新和新增都是put方法
         hashOps.put(skuId, JSON.toJSONString(cart));
@@ -143,7 +147,12 @@ public class CartService {
         List<Object> unLoginCartJsons = unLoginHashOps.values();
         List<Cart> unLoginCarts = null;
         if(!CollectionUtils.isEmpty(unLoginCartJsons)){
-            unLoginCarts = unLoginCartJsons.stream().map(cartJson -> JSON.parseObject(cartJson.toString(), Cart.class)).collect(Collectors.toList());
+            unLoginCarts = unLoginCartJsons.stream().map(cartJson -> {
+                Cart cart = JSON.parseObject(cartJson.toString(), Cart.class);
+                // 查询redis中的实时价格缓存设置给查询结果集
+                cart.setCurrentPrice(new BigDecimal(this.redisTemplate.opsForValue().get(PRICE_PREFIX + cart.getSkuId())));
+                return cart;
+            }).collect(Collectors.toList());
         }
 
         // 2.判断登录状态
@@ -180,7 +189,11 @@ public class CartService {
         // 6.查询登录状态的购物车
         List<Object> loginCartJsons = loginHashOps.values();
         if (!CollectionUtils.isEmpty(loginCartJsons)){
-            return loginCartJsons.stream().map(cartJson -> JSON.parseObject(cartJson.toString(), Cart.class)).collect(Collectors.toList());
+            return loginCartJsons.stream().map(cartJson -> {
+                Cart cart = JSON.parseObject(cartJson.toString(), Cart.class);
+                cart.setCurrentPrice(new BigDecimal(this.redisTemplate.opsForValue().get(PRICE_PREFIX + cart.getSkuId())));
+                return cart;
+            }).collect(Collectors.toList());
         }
         return null;
     }
