@@ -1,8 +1,6 @@
 package com.atguigu.gmall.cart.controller;
 
-import com.atguigu.gmall.cart.Interceptor.LoginInterceptor;
 import com.atguigu.gmall.cart.pojo.Cart;
-import com.atguigu.gmall.cart.pojo.UserInfo;
 import com.atguigu.gmall.cart.service.CartService;
 import com.atguigu.gmall.common.bean.ResponseVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Controller
 public class CartController {
@@ -58,6 +55,13 @@ public class CartController {
     public ResponseVo<Object> deleteCart(@RequestParam("skuId")Long skuId){
         this.cartService.deleteCart(skuId);
         return ResponseVo.ok();
+    }
+
+    @GetMapping("user/{userId}")
+    @ResponseBody
+    public ResponseVo<List<Cart>> queryCheckedCartByUserId(@PathVariable("userId")Long userId){
+        List<Cart> carts = this.cartService.queryCheckedCartByUserId(userId);
+        return ResponseVo.ok(carts);
     }
 
     @GetMapping("test")
