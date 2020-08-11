@@ -1,4 +1,4 @@
-package com.atguigu.gmall.order.vo;
+package com.atguigu.gmall.oms.vo;
 
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
 import lombok.Data;
@@ -16,4 +16,5 @@ public class OrderSubmitVo {
 
     private List<OrderItemVo> items; // 送货清单
     private Integer bounds; // 积分信息
+    private BigDecimal postFee;
 }

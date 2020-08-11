@@ -1,26 +1,39 @@
 package com.atguigu.gmall.order.service;
 
+import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.cart.pojo.Cart;
 import com.atguigu.gmall.common.bean.ResponseVo;
 import com.atguigu.gmall.common.bean.UserInfo;
+import com.atguigu.gmall.common.exception.OrderException;
+import com.atguigu.gmall.oms.entity.OrderEntity;
+import com.atguigu.gmall.oms.vo.OrderSubmitVo;
 import com.atguigu.gmall.order.Interceptor.LoginInterceptor;
 import com.atguigu.gmall.order.feign.*;
 import com.atguigu.gmall.order.vo.OrderConfirmVo;
-import com.atguigu.gmall.order.vo.OrderItemVo;
+import com.atguigu.gmall.oms.vo.OrderItemVo;
 import com.atguigu.gmall.pms.entity.SkuAttrValueEntity;
 import com.atguigu.gmall.pms.entity.SkuEntity;
 import com.atguigu.gmall.sms.vo.ItemSaleVo;
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
 import com.atguigu.gmall.ums.entity.UserEntity;
 import com.atguigu.gmall.wms.entity.WareSkuEntity;
+import com.atguigu.gmall.wms.vo.SkuLockVo;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,7 +55,13 @@ public class OrderService {
     private GmallUmsClient umsClient;
 
     @Autowired
+    private GmallOmsClient omsClient;
+
+    @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     private static final String KEY_PREFIX = "order:token:";
 
@@ -99,8 +118,83 @@ public class OrderService {
         // 防重，生成唯一标识，响应给页面，保存到redis中一份
         String orderToken = IdWorker.getTimeId();
         confirmVo.setOrderToken(orderToken);
-        this.redisTemplate.opsForValue().set(KEY_PREFIX + orderToken, orderToken);
+        this.redisTemplate.opsForValue().set(KEY_PREFIX + orderToken, orderToken, 3, TimeUnit.HOURS);
 
         return confirmVo;
+    }
+
+    public OrderEntity submit(OrderSubmitVo submitVo) {
+        // 1.防重
+        String orderToken = submitVo.getOrderToken();
+        if (StringUtils.isBlank(orderToken)){
+            throw new OrderException("^_^");
+        }
+        String script = "if redis.call('get', KEYS[1]) == ARGV[1] " +
+                "then return redis.call('del', KEYS[1]) " +
+                "else return 0 end";
+        Boolean flag = redisTemplate.execute(new DefaultRedisScript<>(script, Boolean.class), Arrays.asList(KEY_PREFIX + orderToken), orderToken);
+        if (!flag){
+            throw new OrderException("请不要重复提交！");
+        }
+
+        // 2.验价
+        BigDecimal totalPrice = submitVo.getTotalPrice();
+        List<OrderItemVo> items = submitVo.getItems();
+        if (CollectionUtils.isEmpty(items)){
+            throw new OrderException("请选择要购买的商品！");
+        }
+        BigDecimal currentTotalPrice = items.stream().map(item -> {
+            // 根据skuId查询数据库中的实时单价
+            ResponseVo<SkuEntity> skuEntityResponseVo = this.pmsClient.querySkuById(item.getSkuId());
+            SkuEntity skuEntity = skuEntityResponseVo.getData();
+            if (skuEntity == null) {
+                return new BigDecimal(0);
+            }
+            return skuEntity.getPrice().multiply(item.getCount());
+        }).reduce((a, b) -> a.add(b)).get();
+        if (totalPrice.compareTo(currentTotalPrice) != 0) {
+            throw new OrderException("页面已过期，请刷新后再试！");
+        }
+
+        // 3.验库存并锁库存
+        List<SkuLockVo> lockVos = items.stream().map(item -> {
+            SkuLockVo lockVo = new SkuLockVo();
+            lockVo.setSkuId(item.getSkuId());
+            lockVo.setCount(item.getCount().intValue());
+            return lockVo;
+        }).collect(Collectors.toList());
+        ResponseVo<List<SkuLockVo>> skuLockResponseVo = this.wmsClient.checkAndLock(lockVos, orderToken);
+        List<SkuLockVo> skuLockVos = skuLockResponseVo.getData();
+        if (!CollectionUtils.isEmpty(skuLockVos)){
+            throw new OrderException(JSON.toJSONString(skuLockVos));
+        }
+
+        // 4.下单
+        Long userId = null;
+        OrderEntity orderEntity = null;
+        try {
+            UserInfo userInfo = LoginInterceptor.getUserInfo();
+            userId = userInfo.getUserId();
+            ResponseVo<OrderEntity> orderEntityResponseVo = this.omsClient.saveOrder(submitVo, userId);
+            orderEntity = orderEntityResponseVo.getData();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 发送消息给库存和oms，解锁库存并修改订单状态
+            this.rabbitTemplate.convertAndSend("ORDER-EXCHANGE", "order.fail", orderToken);
+        }
+
+        // 5.发消息给购物车，删除对应购物车信息
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("userId", userId);
+            List<Long> skuIds = items.stream().map(OrderItemVo::getSkuId).collect(Collectors.toList());
+            map.put("skuIds", JSON.toJSONString(skuIds));
+            this.rabbitTemplate.convertAndSend("ORDER-EXCHANGE", "cart.delete", map);
+        } catch (AmqpException e) {
+            e.printStackTrace();
+        }
+
+        return orderEntity;
     }
 }
