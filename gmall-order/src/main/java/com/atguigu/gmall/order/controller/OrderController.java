@@ -39,6 +39,6 @@ public class OrderController {
     public ResponseVo<Object> submit(@RequestBody OrderSubmitVo submitVo){
 
         OrderEntity orderEntity = this.orderService.submit(submitVo);
-        return ResponseVo.ok(null);
+        return ResponseVo.ok(orderEntity.getOrderSn());
     }
 }

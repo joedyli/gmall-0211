@@ -13,4 +13,8 @@
     <update id="unlock">
         update wms_ware_sku set stock_locked=stock_locked-#{count} where id=#{id}
     </update>
+
+    <update id="minusStock">
+        update wms_ware_sku set stock=stock-#{count},stock_locked=stock_locked-#{count},sales=sales+#{count} where id=#{id}
+    </update>
 </mapper>

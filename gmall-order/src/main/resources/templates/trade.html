@@ -155,7 +155,7 @@
             </div>
             <div class="list">
                 <span>运费：</span>
-                <em class="transport">{{postFee.toFixed(2)}}</em>
+                <em class="transport">{{order.postFee.toFixed(2)}}</em>
             </div>
         </div>
     </div>
@@ -190,10 +190,11 @@
                 deliveryCompany: "顺丰快递",
                 bounds: [[${confirmVo.bounds}]],   // 积分信息
                 items: [[${confirmVo.items}]], // 送货清单
-                totalPrice: 0
+                totalPrice: 0,
+                postFee: 10.00
             },
             returnMoney: 0.00,
-            postFee: 10.00
+
         },
         created(){
             // 处理默认地址选中状态
@@ -219,7 +220,7 @@
                 return this.order.items.reduce((a, b) => a + b.count, 0)
             },
             payAmount(){
-                return this.order.totalPrice + this.postFee - this.returnMoney;
+                return this.order.totalPrice + this.order.postFee - this.returnMoney;
             }
         },
         methods: {

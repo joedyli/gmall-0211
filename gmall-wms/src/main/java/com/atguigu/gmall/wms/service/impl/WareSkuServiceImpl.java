@@ -49,7 +49,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuMapper, WareSkuEntity
         return new PageResultVo(page);
     }
 
-    //@Transactional
+    @Transactional
     @Override
     public List<SkuLockVo> checkAndLock(List<SkuLockVo> lockVos, String orderToken) {
 

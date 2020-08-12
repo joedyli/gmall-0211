@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atguigu.gmall.oms.mapper.OrderMapper">
 
+    <update id="success">
+        update oms_order set status = 1, payment_time = now() where order_sn = #{orderToken} and status = 0
+    </update>
 </mapper>

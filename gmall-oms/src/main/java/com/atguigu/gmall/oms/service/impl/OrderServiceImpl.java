@@ -81,7 +81,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
         UserEntity userEntity = userEntityResponseVo.getData();
         orderEntity.setUsername(userEntity.getUsername());
         orderEntity.setTotalAmount(submitVo.getTotalPrice());
-        orderEntity.setPayAmount(submitVo.getTotalPrice().add(submitVo.getPostFee()).subtract(new BigDecimal(submitVo.getBounds() / 100)));
+        orderEntity.setPayAmount(submitVo.getTotalPrice().add(submitVo.getPostFee()==null ? new BigDecimal(0) : submitVo.getPostFee()).subtract(new BigDecimal(submitVo.getBounds() / 100)));
         orderEntity.setFreightAmount(submitVo.getPostFee());
         // TODO：查询营销信息，计算优化金额
         orderEntity.setPromotionAmount(null);
