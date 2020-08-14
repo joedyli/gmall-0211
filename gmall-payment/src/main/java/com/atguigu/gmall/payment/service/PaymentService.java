@@ -12,6 +12,7 @@ import com.atguigu.gmall.payment.vo.PayAsyncVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Service
@@ -29,11 +30,11 @@ public class PaymentService {
         return orderEntityResponseVo.getData();
     }
 
-    public Long savePayment(OrderEntity orderEntity) {
+    public Long savePayment(OrderEntity orderEntity, String price) {
         PaymentInfoEntity paymentInfoEntity = new PaymentInfoEntity();
         paymentInfoEntity.setPaymentStatus(0);
         paymentInfoEntity.setCreateTime(new Date());
-        paymentInfoEntity.setTotalAmount(orderEntity.getPayAmount());
+        paymentInfoEntity.setTotalAmount(new BigDecimal(price));
         paymentInfoEntity.setSubject("谷粒商城支付平台");
         paymentInfoEntity.setPaymentType(1);
         paymentInfoEntity.setOutTradeNo(orderEntity.getOrderSn());
